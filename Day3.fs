@@ -16,12 +16,23 @@ let runDay3 () =
 
     let width = Array.head trees |> Array.length
 
-    // Part 1
     // x-index (position on the row) is equal to 3 * y-index, modulo width
-    let treeCount =
+    let countTrees xVelocity yVelocity =
         trees
         |> Seq.indexed
-        |> Seq.filter (fun (i, row) -> row.[(3 * i) % width])
+        |> Seq.filter (fun (i, _) -> i % yVelocity = 0)
+        |> Seq.filter (fun (i, row) -> row.[(xVelocity * (i / yVelocity)) % width])
         |> Seq.length
 
-    printfn "%i trees were encountered." treeCount
+    let scenarios = [1,1; 3,1; 5,1; 7,1; 1,2]
+    
+    let product =
+        scenarios
+        |> List.fold
+            (fun state (xVelocity, yVelocity) ->
+                let trees = countTrees xVelocity yVelocity
+                printfn "Right %i, down %i: %i trees" xVelocity yVelocity trees
+                state * trees)
+            1
+
+    printfn "\nProduct: %i" product
