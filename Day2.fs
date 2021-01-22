@@ -3,19 +3,19 @@
 open System.IO
 open FParsec
 
-type Policy = { Min: int; Max: int; Letter: char }
+type Policy = { Pos1: int; Pos2: int; Letter: char }
 
 type Password = Password of string
 
 let parseLine<'a> : Parser<Policy * Password, 'a> =
-    pint32 .>>. (pchar '-' >>. pint32) >>= fun (min, max) -> 
+    pint32 .>>. (pchar '-' >>. pint32) >>= fun (pos1, pos2) -> 
     spaces1 >>. (anyChar .>> pchar ':') >>= fun letter ->
     spaces1 >>. restOfLine false |>> fun password ->
-    { Min = min; Max = max; Letter = letter; }, Password password
+    { Pos1 = pos1; Pos2 = pos2; Letter = letter; }, Password password
 
 let isValid (policy: Policy) (password: string): bool =
-    let occurs = password |> Seq.filter ((=) policy.Letter) |> Seq.length
-    occurs >= policy.Min && occurs <= policy.Max
+    let chars = Seq.toArray password
+    (chars.[policy.Pos1 - 1] = policy.Letter) <> (chars.[policy.Pos2 - 1] = policy.Letter)
 
 let runDay2 () =
 
@@ -30,7 +30,7 @@ let runDay2 () =
         |> Seq.iter
             (fun (policy, Password pw) ->
                 let assessment = if isValid policy pw then "  valid:" else "invalid:"
-                printfn "%s %i-%i %c %s" assessment policy.Min policy.Max policy.Letter pw
+                printfn "%s %i-%i %c: %s" assessment policy.Pos1 policy.Pos2 policy.Letter pw
             )
 
     let validPasswords = inputs |> Seq.filter (fun (policy, Password pw) -> isValid policy pw)
