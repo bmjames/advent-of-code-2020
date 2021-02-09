@@ -1,5 +1,6 @@
 ﻿module Day4
 
+open System
 open System.IO
 open FSharp.Control
 
@@ -63,19 +64,48 @@ let parseLine (line: string) : (string * string) list =
             | _ -> failwithf "invalid token: %s" str)
     |> Seq.toList
 
-let requiredKeys =
-    [
-        "byr"
-        "iyr"
-        "eyr"
-        "hgt"
-        "hcl"
-        "ecl"
-        "pid"
-    ]
+let tryParseWith (f: string -> bool * 'a) : string -> 'a option =
+    f >>
+    function
+    | true, x -> Some x
+    | false, _ -> None
 
-let isValid (passport: Map<string, string>) : bool =
-    requiredKeys |> Seq.forall (fun key -> Map.containsKey key passport)
+let tryParseInt = tryParseWith Int32.TryParse
+
+let inRange lowerBound upperBound x = x >= lowerBound && x <= upperBound
+
+/// Combine 2 predicates with AND
+let (&&&) f g x = f x && g x
+
+// Combine 2 predcates with OR
+let (|||) f g x = f x || g x
+
+let validateHeight (input: string) =
+    let digits = input |> Seq.takeWhile Char.IsDigit |> String.Concat
+    let unit = input |> Seq.skipWhile Char.IsDigit |> String.Concat
+    match unit with
+    | "cm" -> tryParseInt digits |> Option.exists (inRange 150 193)
+    | "in" -> tryParseInt digits |> Option.exists (inRange 59 76)
+    | _ -> false
+
+let validateHairColour (input: string) =
+    match input.ToCharArray() |> List.ofArray with
+    | '#' :: tail -> List.length tail = 6 && List.forall (Char.IsDigit ||| inRange 'a' 'f') tail
+    | _ -> false
+
+let validateEyeColour input = List.contains input ["amb"; "blu"; "brn"; "gry"; "grn"; "hzl"; "oth"]
+
+let validatePid (input: string) = String.length input = 9 && String.forall Char.IsDigit input
+
+let isValid : Map<string, string> -> bool =
+
+    (Map.tryFind "byr" >> Option.bind tryParseInt >> Option.exists (inRange 1920 2002))
+    &&& (Map.tryFind "iyr" >> Option.bind tryParseInt >> Option.exists (inRange 2010 2020))
+    &&& (Map.tryFind "eyr" >> Option.bind tryParseInt >> Option.exists (inRange 2020 2030))
+    &&& (Map.tryFind "hgt" >> Option.exists validateHeight)
+    &&& (Map.tryFind "hcl" >> Option.exists validateHairColour)
+    &&& (Map.tryFind "ecl" >> Option.exists validateEyeColour)
+    &&& (Map.tryFind "pid" >> Option.exists validatePid)
 
 let runDay4 () =
 
