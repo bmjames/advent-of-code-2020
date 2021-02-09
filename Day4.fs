@@ -47,12 +47,7 @@ module AsyncSeq =
                         return None
                 }
         
-            yield!
-                AsyncSeq.unfoldAsync
-                    (fun () -> async {
-                        let! chunk = nextChunk ()
-                        return Option.map (fun x -> x, ()) chunk
-                    }) ()
+            yield! AsyncSeq.replicateUntilNoneAsync (nextChunk())
         }
 
 let parseLine (line: string) : (string * string) list =
