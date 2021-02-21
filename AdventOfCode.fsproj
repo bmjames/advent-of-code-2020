@@ -14,12 +14,14 @@
     <Compile Include="Day5.fs" />
     <Compile Include="Day6.fs" />
     <Compile Include="Day7.fs" />
+    <Compile Include="Day8.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FParsec" Version="1.1.1" />
     <PackageReference Include="FSharp.Control.AsyncSeq" Version="3.0.3" />
+    <PackageReference Include="FSharp.Text.RegexProvider" Version="2.1.0" />
   </ItemGroup>
 
 </Project>
