@@ -3,11 +3,8 @@
 open System
 open System.IO
 
-let combinations (xs: 'a seq) : ('a * 'a) seq =
-    xs |> Seq.collect (fun x -> Seq.map (fun y -> x, y) xs)
-
 let isValid window : bool =
-    combinations window
+    Seq.allPairs window window
     |> Seq.filter (fun (x, y) -> x <> y)
     |> Seq.map (fun (x, y) -> x + y)
     |> Seq.exists (fun x -> x = Array.last window)
