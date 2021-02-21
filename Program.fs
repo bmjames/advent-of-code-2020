@@ -2,6 +2,6 @@
 [<EntryPoint>]
 let main argv =
 
-    Day8.run()
+    Day9.run()
 
     0
