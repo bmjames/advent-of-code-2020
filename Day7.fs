@@ -22,11 +22,13 @@ let run () =
         |> Seq.map (CharParsers.run parseBagRule)
         |> Seq.map (function | Success(result, _, _) -> result
                              | Failure(errMsg, _, _) -> failwith errMsg)
+        |> Map.ofSeq
 
     // Part 1
 
     let bagsByContainer =
         rules
+        |> Map.toSeq
         |> Seq.collect (fun (container, contents) -> contents |> Seq.map (fun (_, colour) -> colour, container))
         |> Seq.groupBy fst
         |> Seq.map (fun (contained, containers) -> contained, Seq.map snd containers)
@@ -37,4 +39,13 @@ let run () =
         Seq.append containers (Seq.collect containedBy containers)
 
     let answer = containedBy "shiny gold" |> Set.ofSeq
-    printfn "Shiny gold bags can be contained by %i bags: %A" (Set.count answer) (List.ofSeq answer)
+    printfn "Shiny gold bags can be contained by %i bags" (Set.count answer)
+
+    // Part 2
+
+    let rec countContained bag =
+        Map.tryFind bag rules
+        |> Option.defaultValue []
+        |> List.sumBy (fun (count, bag) -> count * (1 + countContained bag))
+
+    printfn "A shiny gold bag must contain %i other bags" (countContained "shiny gold")
